@@ -1,0 +1,496 @@
+:root {
+  --bg: #20112b;
+  --panel: #2e1a3d;
+  --panel-2: #3a2250;
+  --line: #4e3367;
+  --text: #f4eefa;
+  --muted: #b9a8cc;
+  --gold: #f5b83d;
+  --gold-ink: #2a1a05;
+  --free: #4a3668;
+  --mine: #f5b83d;
+  --taken: #c2566b;
+  --booked: #2a1d36;
+  --error: #ff8a9b;
+  --ok: #7be0a6;
+  color-scheme: dark;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Sora", system-ui, sans-serif;
+  line-height: 1.55;
+}
+h1,
+h2,
+h3 {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  margin: 0 0 0.4rem;
+}
+h1 {
+  font-size: 2.3rem;
+}
+h2 {
+  font-size: 1.5rem;
+  margin-top: 1.8rem;
+}
+h3 {
+  font-size: 1.15rem;
+}
+p {
+  margin: 0.2rem 0;
+}
+a {
+  color: var(--gold);
+}
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.pad {
+  padding: 2rem;
+}
+.lead {
+  max-width: 60ch;
+  margin: 0.8rem 0;
+}
+.error {
+  color: var(--error);
+}
+.ok {
+  color: var(--ok);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.9rem 2rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  text-decoration: none;
+}
+.nav nav {
+  display: flex;
+  gap: 1.1rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.nav nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.2rem 0;
+}
+.nav nav a.active {
+  color: var(--text);
+  border-bottom: 2px solid var(--gold);
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.page {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 1.8rem 1.2rem 4rem;
+}
+.btn {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--gold-ink);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line);
+}
+.btn.ghost:hover {
+  transform: translate(1.2);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.seat:focus-visible,
+.tab:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.row.sub {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--line);
+  font-size: 0.92rem;
+}
+.list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.form.narrow {
+  max-width: 420px;
+  margin: 2rem auto;
+}
+.two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.8rem;
+}
+label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+input,
+select,
+textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+}
+
+.hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+.search {
+  min-width: 240px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1.3rem;
+}
+.movie {
+  color: inherit;
+  text-decoration: none;
+}
+.poster {
+  aspect-ratio: 2 / 3;
+  border-radius: 10px;
+  background: var(--panel-2) center / cover;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  text-align: center;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+  transition: transform 0.15s;
+}
+.movie:hover .poster {
+  transform: translateY(-3px);
+}
+
+.screen-glow {
+  margin: 1.6rem auto 0.4rem;
+  max-width: 560px;
+  text-align: center;
+  color: var(--gold-ink);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.35rem 0;
+  background: var(--gold);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: 0 -10px 40px rgba(245, 184, 61, 0.45);
+}
+.seatmap {
+  display: grid;
+  gap: 0.45rem;
+  justify-content: center;
+  margin: 1.6rem 0 1rem;
+  overflow-x: auto;
+  padding: 0.3rem;
+}
+.seat-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: center;
+}
+.row-label {
+  width: 1.4rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.seat {
+  width: 32px;
+  height: 30px;
+  border-radius: 7px 7px 4px 4px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+}
+.seat.free {
+  background: var(--free);
+}
+.seat.free:hover {
+  border-color: var(--gold);
+}
+.seat.mine {
+  background: var(--mine);
+  color: var(--gold-ink);
+  font-weight: 700;
+}
+.seat.taken {
+  background: var(--taken);
+  cursor: not-allowed;
+}
+.seat.booked {
+  background: var(--booked);
+  color: #6f5a82;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.legend {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+}
+.legend .seat {
+  display: inline-block;
+  width: 18px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 0.3rem;
+  cursor: default;
+}
+.bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: 1rem;
+}
+
+.ticket {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ticket-main {
+  padding: 1rem 1.3rem;
+}
+.ticket-stub {
+  padding: 1rem 1.3rem;
+  border-left: 2px dashed var(--line);
+  display: grid;
+  gap: 0.4rem;
+  align-content: center;
+  justify-items: start;
+  min-width: 190px;
+  background: var(--panel-2);
+}
+.ticket.cancelled {
+  opacity: 0.6;
+}
+.code {
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+.badge {
+  color: var(--error);
+  font-size: 0.85rem;
+}
+@media (max-width: 600px) {
+  .ticket {
+    grid-template-columns: 1fr;
+  }
+  .ticket-stub {
+    border-left: 0;
+    border-top: 2px dashed var(--line);
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.tab {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font: inherit;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--gold);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border-radius: 10px;
+  overflow: hidden;
+}
+th,
+td {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.btn {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(245, 184, 61, 0.35);
+}
+.btn.ghost:hover:not(:disabled) {
+  background: var(--panel-2);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: none;
+}
+
+/* respect people who turn animations off */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+  .btn:hover:not(:disabled),
+  .btn:active:not(:disabled) {
+    transform: none;
+  }
+}
+/* theatres page */
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.theatre-side {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.dist {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.theatre-shows {
+  margin-top: 0.6rem;
+}
+.loc-edit {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--line);
+}
+.loc-edit label {
+  flex: 1;
+  min-width: 130px;
+}
+
+
+/* keep long text from stretching form fields */
+.two > label,
+.form label { min-width: 0; }
+
+input, select, textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+select {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
