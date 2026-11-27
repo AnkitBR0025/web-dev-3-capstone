@@ -1,9 +1,9 @@
 {
-  "name": "movietime-server",
+  "name": "CineGo-server",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seed.js"
   },
