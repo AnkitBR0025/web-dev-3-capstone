@@ -30,6 +30,7 @@ export default function Register() {
       <label>Password<input name="password" type="password" value={form.password} onChange={change} required minLength={6} /></label>
       <button className="btn">Sign up</button>
       <p className="muted">Already registered? <Link to="/login">Log in</Link></p>
+      <p className="muted">Running a cinema? <Link to="/theatre-admin/register">Apply for theatre admin access</Link></p>
     </form>
   );
 }

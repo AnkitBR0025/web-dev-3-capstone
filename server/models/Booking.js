@@ -6,6 +6,7 @@ const bookingSchema = new mongoose.Schema(
     show: { type: mongoose.Schema.Types.ObjectId, ref: 'Show', required: true },
     seats: { type: [String], validate: [(v) => v.length > 0, 'Select at least one seat'] },
     totalAmount: { type: Number, required: true, min: 0 },
+    paymentMethod: { type: String, enum: ['upi', 'card', 'netbanking'] },
     ticketCode: { type: String, required: true, unique: true },
     status: { type: String, enum: ['confirmed', 'cancelled'], default: 'confirmed' },
     cancelledAt: Date,

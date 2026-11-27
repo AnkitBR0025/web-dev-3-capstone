@@ -1,4 +1,5 @@
 const Show = require('../models/Show');
+const Movie = require('../models/Movie');
 const Screen = require('../models/Screen');
 const Theatre = require('../models/Theatre');
 const Booking = require('../models/Booking');
@@ -46,10 +47,39 @@ exports.update = asyncHandler(async (req, res) => {
   const show = await Show.findById(req.params.id).populate('theatre');
   if (!show) throw new AppError('Show not found', 404);
   assertOwner(show.theatre, req.user);
+  const originalStartTime = show.startTime.getTime();
+
+  if (await Booking.exists({ show: show._id, status: 'confirmed' })) {
+    throw new AppError('Shows with confirmed bookings cannot be edited', 400);
+  }
+
+  const movie = await Movie.findById(req.body.movie || show.movie);
+  if (!movie) throw new AppError('Movie not found', 404);
+  if (req.body.title !== undefined) movie.title = req.body.title;
+  if (req.body.poster !== undefined) movie.poster = req.body.poster;
+
+  if (req.body.screen !== undefined) {
+    const screen = await Screen.findById(req.body.screen).populate('theatre');
+    if (!screen) throw new AppError('Screen not found', 404);
+    assertOwner(screen.theatre, req.user);
+    show.screen = screen._id;
+    show.theatre = screen.theatre._id;
+  }
+  if (req.body.movie !== undefined) show.movie = movie._id;
   if (req.body.startTime !== undefined) show.startTime = req.body.startTime;
   if (req.body.price !== undefined) show.price = req.body.price;
+
+  if (req.body.startTime !== undefined &&
+      new Date(req.body.startTime).getTime() !== originalStartTime &&
+      new Date(req.body.startTime) <= new Date()) {
+    throw new AppError('Show time must be in the future', 400);
+  }
+
+  await movie.validate();
+  await show.validate();
+  if (req.body.title !== undefined || req.body.poster !== undefined) await movie.save();
   await show.save();
-  res.json({ success: true, show });
+  res.json({ success: true, show: await populate(Show.findById(show._id)) });
 });
 
 exports.remove = asyncHandler(async (req, res) => {

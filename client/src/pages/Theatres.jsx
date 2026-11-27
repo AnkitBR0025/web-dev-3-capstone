@@ -32,6 +32,7 @@ function TheatreCard({ t }) {
       <div className="row">
         <div>
           <h3>{t.name}</h3>
+          {t.address && <p className="muted">{t.address}</p>}
           <p className="muted">{t.city}</p>
         </div>
         <div className="theatre-side">
@@ -87,7 +88,7 @@ export default function Theatres() {
   const list = useMemo(() => {
     const term = q.trim().toLowerCase();
     let items = theatres
-      .filter((t) => !term || `${t.name} ${t.city}`.toLowerCase().includes(term))
+      .filter((t) => !term || `${t.name} ${t.address || ''} ${t.city}`.toLowerCase().includes(term))
       .map((t) => {
         const hasPos = typeof t.latitude === 'number' && typeof t.longitude === 'number';
         return here && hasPos ? { ...t, km: distanceKm(here, { lat: t.latitude, lng: t.longitude }) } : t;

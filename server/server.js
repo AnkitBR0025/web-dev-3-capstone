@@ -10,6 +10,7 @@ app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/theatre-admin-applications', require('./routes/theatreAdminApplicationRoutes'));
 app.use('/api/movies', require('./routes/movieRoutes'));
 app.use('/api/theatres', require('./routes/theatreRoutes'));
 app.use('/api/screens', require('./routes/screenRoutes'));

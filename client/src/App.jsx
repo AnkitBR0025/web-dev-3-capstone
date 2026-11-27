@@ -8,6 +8,7 @@ import SeatMap from './pages/SeatMap.jsx';
 import MyBookings from './pages/MyBookings.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import TheatreAdminRegister from './pages/TheatreAdminRegister.jsx';
 import Admin from './pages/Admin.jsx';
 import Reports from './pages/Reports.jsx';
 
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/theatres" element={<Theatres />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/theatre-admin/register" element={<TheatreAdminRegister />} />
           <Route path="/book/:showId" element={<ProtectedRoute><SeatMap /></ProtectedRoute>} />
           <Route path="/bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute roles={ADMINS}><Admin /></ProtectedRoute>} />

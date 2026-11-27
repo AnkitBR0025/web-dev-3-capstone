@@ -27,9 +27,16 @@ exports.mine = asyncHandler(async (req, res) => {
 const num = (v) => (v === '' || v === null || v === undefined ? undefined : Number(v));
 
 exports.create = asyncHandler(async (req, res) => {
-  const { name, city, admin, latitude, longitude } = req.body;
+  const { name, address, city, admin, latitude, longitude } = req.body;
   const owner = req.user.role === 'superAdmin' && admin ? admin : req.user._id;
-  const theatre = await Theatre.create({ name, city, admin: owner, latitude: num(latitude), longitude: num(longitude) });
+  const theatre = await Theatre.create({
+    name,
+    address,
+    city,
+    admin: owner,
+    latitude: num(latitude),
+    longitude: num(longitude),
+  });
   res.status(201).json({ success: true, theatre });
 });
 
@@ -38,6 +45,7 @@ exports.update = asyncHandler(async (req, res) => {
   if (!theatre) throw new AppError('Theatre not found', 404);
   assertOwner(theatre, req.user);
   if (req.body.name !== undefined) theatre.name = req.body.name;
+  if (req.body.address !== undefined) theatre.address = req.body.address;
   if (req.body.city !== undefined) theatre.city = req.body.city;
   if (req.body.latitude !== undefined) theatre.latitude = num(req.body.latitude);
   if (req.body.longitude !== undefined) theatre.longitude = num(req.body.longitude);

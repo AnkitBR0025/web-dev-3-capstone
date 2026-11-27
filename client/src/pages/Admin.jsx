@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -38,6 +39,8 @@ function Msg({ error }) {
 function MoviesTab() {
   const [movies, setMovies] = useState([]);
   const [form, change, reset] = useForm({ title: '', duration: '', language: 'English', genre: '', poster: '', description: '' });
+  const [editingId, setEditingId] = useState('');
+  const [editForm, setEditForm] = useState({});
   const [error, setError] = useState('');
   const load = () => api('/movies').then((d) => setMovies(d.movies));
   useEffect(() => { load().catch((e) => setError(e.message)); }, []);
@@ -49,6 +52,32 @@ function MoviesTab() {
       await api('/movies', { method: 'POST', body: { ...form, duration: Number(form.duration) } });
       reset();
       load();
+    } catch (err) { setError(err.message); }
+  };
+  const edit = (movie) => {
+    setEditingId(movie._id);
+    setEditForm({
+      title: movie.title,
+      duration: movie.duration,
+      language: movie.language || '',
+      genre: movie.genre || '',
+      poster: movie.poster || '',
+      description: movie.description || '',
+    });
+    setError('');
+  };
+  const changeEdit = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await api(`/movies/${editingId}`, {
+        method: 'PUT',
+        body: { ...editForm, duration: Number(editForm.duration) },
+      });
+      setEditingId('');
+      setEditForm({});
+      await load();
     } catch (err) { setError(err.message); }
   };
   const remove = async (id) => {
@@ -73,9 +102,33 @@ function MoviesTab() {
       </form>
       <div className="list">
         {movies.map((m) => (
-          <div className="row card" key={m._id}>
-            <div><strong>{m.title}</strong><p className="muted">{m.genre} · {m.language} · {m.duration} min</p></div>
-            <button className="btn ghost" onClick={() => remove(m._id)}>Delete</button>
+          <div className="card" key={m._id}>
+            {editingId === m._id ? (
+              <form className="form" onSubmit={saveEdit}>
+                <h3>Edit movie</h3>
+                <Msg error={error} />
+                <div className="two">
+                  <label>Title<input name="title" value={editForm.title} onChange={changeEdit} required /></label>
+                  <label>Duration (minutes)<input name="duration" type="number" min="1" value={editForm.duration} onChange={changeEdit} required /></label>
+                  <label>Language<input name="language" value={editForm.language} onChange={changeEdit} /></label>
+                  <label>Genre<input name="genre" value={editForm.genre} onChange={changeEdit} /></label>
+                </div>
+                <label>Poster image URL<input name="poster" value={editForm.poster} onChange={changeEdit} /></label>
+                <label>Description<textarea name="description" rows="2" value={editForm.description} onChange={changeEdit} /></label>
+                <div className="actions">
+                  <button className="btn">Save changes</button>
+                  <button type="button" className="btn ghost" onClick={() => setEditingId('')}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <div className="row">
+                <div><strong>{m.title}</strong><p className="muted">{m.genre} · {m.language} · {m.duration} min</p></div>
+                <div className="actions">
+                  <button className="btn ghost" onClick={() => edit(m)}>Edit</button>
+                  <button className="btn ghost" onClick={() => remove(m._id)}>Delete</button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -86,7 +139,7 @@ function MoviesTab() {
 function TheatresTab() {
   const [theatres, setTheatres] = useState([]);
   const [screens, setScreens] = useState([]);
-  const [tForm, tChange, tReset, setT] = useForm({ name: '', city: '', latitude: '', longitude: '' });
+  const [tForm, tChange, tReset, setT] = useForm({ name: '', address: '', city: '', latitude: '', longitude: '' });
   const [sForm, sChange, sReset] = useForm({ theatre: '', name: '', rows: 6, seatsPerRow: 10 });
   const [error, setError] = useState('');
 
@@ -109,6 +162,7 @@ function TheatresTab() {
         <h3>Add a theatre</h3>
         <div className="two">
           <label>Name<input name="name" value={tForm.name} onChange={tChange} required /></label>
+          <label>Street address<input name="address" value={tForm.address} onChange={tChange} /></label>
           <label>City<input name="city" value={tForm.city} onChange={tChange} required /></label>
           <label>Latitude (for "near me", optional)<input name="latitude" type="number" step="any" value={tForm.latitude} onChange={tChange} /></label>
           <label>Longitude (optional)<input name="longitude" type="number" step="any" value={tForm.longitude} onChange={tChange} /></label>
@@ -139,7 +193,11 @@ function TheatresTab() {
         {theatres.map((t) => (
           <div className="card" key={t._id}>
             <div className="row">
-              <div><strong>{t.name}</strong><p className="muted">{t.city}</p></div>
+              <div>
+                <strong>{t.name}</strong>
+                {t.address && <p className="muted">{t.address}</p>}
+                <p className="muted">{t.city}</p>
+              </div>
               <button className="btn ghost" onClick={() => run(() => api(`/theatres/${t._id}`, { method: 'DELETE' }))}>Delete theatre</button>
             </div>
             <LocationEditor
@@ -166,6 +224,8 @@ function ShowsTab() {
   const [movies, setMovies] = useState([]);
   const [screens, setScreens] = useState([]);
   const [form, change, reset] = useForm({ movie: '', screen: '', startTime: '', price: '' });
+  const [editingId, setEditingId] = useState('');
+  const [editForm, setEditForm] = useState({});
   const [error, setError] = useState('');
 
   const load = async () => {
@@ -188,6 +248,47 @@ function ShowsTab() {
   const remove = async (id) => {
     setError('');
     try { await api(`/shows/${id}`, { method: 'DELETE' }); load(); } catch (err) { setError(err.message); }
+  };
+  const startEdit = (show) => {
+    const startTime = new Date(show.startTime);
+    startTime.setMinutes(startTime.getMinutes() - startTime.getTimezoneOffset());
+    setEditingId(show._id);
+    setEditForm({
+      movie: show.movie._id,
+      title: show.movie.title,
+      poster: show.movie.poster || '',
+      screen: show.screen._id,
+      startTime: startTime.toISOString().slice(0, 16),
+      price: show.price,
+    });
+    setError('');
+  };
+  const changeEdit = (e) => {
+    const { name, value } = e.target;
+    setEditForm((current) => {
+      if (name === 'movie') {
+        const selected = movies.find((movie) => movie._id === value);
+        return { ...current, movie: value, title: selected?.title || '', poster: selected?.poster || '' };
+      }
+      return { ...current, [name]: value };
+    });
+  };
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await api(`/shows/${editingId}`, {
+        method: 'PUT',
+        body: {
+          ...editForm,
+          price: Number(editForm.price),
+          startTime: new Date(editForm.startTime).toISOString(),
+        },
+      });
+      setEditingId('');
+      setEditForm({});
+      await load();
+    } catch (err) { setError(err.message); }
   };
 
   return (
@@ -215,12 +316,45 @@ function ShowsTab() {
       </form>
       <div className="list">
         {shows.map((s) => (
-          <div className="row card" key={s._id}>
-            <div>
-              <strong>{s.movie.title}</strong>
-              <p className="muted">{s.theatre.name} · {s.screen.name} · {new Date(s.startTime).toLocaleString()} · ₹{s.price} · {s.bookedSeats.length} seats sold</p>
-            </div>
-            <button className="btn ghost" onClick={() => remove(s._id)}>Delete</button>
+          <div className="card" key={s._id}>
+            {editingId === s._id ? (
+              <form className="form" onSubmit={saveEdit}>
+                <h3>Edit show</h3>
+                <div className="two">
+                  <label>Movie
+                    <select name="movie" value={editForm.movie} onChange={changeEdit} required>
+                      <option value="">Choose a movie</option>
+                      {movies.map((m) => <option key={m._id} value={m._id}>{m.title}</option>)}
+                    </select>
+                  </label>
+                  <label>Movie title (shared across its shows)<input name="title" value={editForm.title} onChange={changeEdit} required /></label>
+                  <label>Poster image URL (shared across its shows)<input name="poster" value={editForm.poster} onChange={changeEdit} /></label>
+                  <label>Screen
+                    <select name="screen" value={editForm.screen} onChange={changeEdit} required>
+                      <option value="">Choose a screen</option>
+                      {screens.map((screen) => <option key={screen._id} value={screen._id}>{screen.theatre.name} – {screen.name}</option>)}
+                    </select>
+                  </label>
+                  <label>Start time<input name="startTime" type="datetime-local" value={editForm.startTime} onChange={changeEdit} required /></label>
+                  <label>Ticket price (₹)<input name="price" type="number" min="0" value={editForm.price} onChange={changeEdit} required /></label>
+                </div>
+                <div className="actions">
+                  <button className="btn">Save changes</button>
+                  <button type="button" className="btn ghost" onClick={() => setEditingId('')}>Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <div className="row">
+                <div>
+                  <strong>{s.movie.title}</strong>
+                  <p className="muted">{s.theatre.name} · {s.screen.name} · {new Date(s.startTime).toLocaleString()} · ₹{s.price} · {s.bookedSeats.length} seats sold</p>
+                </div>
+                <div className="actions">
+                  <button className="btn ghost" onClick={() => startEdit(s)}>Edit</button>
+                  <button className="btn ghost" onClick={() => remove(s._id)}>Delete</button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -257,15 +391,98 @@ function AdminsTab() {
   );
 }
 
+function ApplicationsTab() {
+  const [applications, setApplications] = useState([]);
+  const [busyId, setBusyId] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const load = async () => {
+    const data = await api('/theatre-admin-applications');
+    setApplications(data.applications);
+  };
+  useEffect(() => { load().catch((err) => setError(err.message)); }, []);
+
+  const review = async (application, decision) => {
+    if (decision === 'reject' && !window.confirm(`Reject ${application.theatreName}'s admin application?`)) return;
+    setBusyId(application._id);
+    setError('');
+    setMessage('');
+    try {
+      await api(`/theatre-admin-applications/${application._id}/${decision}`, { method: 'PATCH' });
+      setMessage(decision === 'approve'
+        ? `${application.theatreName} approved. The admin account and theatre are ready.`
+        : `${application.theatreName}'s application was rejected.`);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId('');
+    }
+  };
+
+  return (
+    <>
+      <Msg error={error} />
+      {message && <p className="ok" role="status">{message}</p>}
+      {applications.length === 0 && !error && <p className="muted">No theatre admin applications yet.</p>}
+      <div className="list">
+        {applications.map((application) => (
+          <article className="card application-card" key={application._id}>
+            <div className="row">
+              <div>
+                <h3>{application.theatreName}</h3>
+                <p>{application.theatreAddress}, {application.theatreCity}</p>
+                <p className="muted">
+                  Applicant: {application.applicant?.name || 'Account unavailable'} · {application.applicant?.email || 'No email'}
+                </p>
+                <p className="muted">Mobile: {application.phone}</p>
+                <p className="muted">Submitted {new Date(application.createdAt).toLocaleString()}</p>
+              </div>
+              <span className={`application-status ${application.status}`}>{application.status}</span>
+            </div>
+            {application.status === 'approved' && application.theatre && (
+              <p className="ok">Theatre created: {application.theatre.name}, {application.theatre.city}</p>
+            )}
+            {application.status === 'approving' && <p className="muted">Approval is processing…</p>}
+            {application.status === 'pending' && (
+              <div className="actions application-actions">
+                <button
+                  className="btn"
+                  type="button"
+                  disabled={busyId === application._id}
+                  onClick={() => review(application, 'approve')}
+                >
+                  {busyId === application._id ? 'Processing…' : 'Approve'}
+                </button>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  disabled={busyId === application._id}
+                  onClick={() => review(application, 'reject')}
+                >
+                  Reject
+                </button>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function Admin() {
   const { user } = useAuth();
+  const location = useLocation();
   const [tab, setTab] = useState('movies');
   const tabs = [['movies', 'Movies'], ['theatres', 'Theatres and screens'], ['shows', 'Shows']];
-  if (user.role === 'superAdmin') tabs.push(['admins', 'Theatre admins']);
+  if (user.role === 'superAdmin') tabs.push(['admins', 'Theatre admins'], ['applications', 'Admin applications']);
 
   return (
     <>
       <h1>Manage</h1>
+      {location.state?.notice && <p className="ok" role="status">{location.state.notice}</p>}
       <div className="tabs">
         {tabs.map(([key, label]) => (
           <button key={key} className={tab === key ? 'tab active' : 'tab'} onClick={() => setTab(key)}>{label}</button>
@@ -275,6 +492,7 @@ export default function Admin() {
       {tab === 'theatres' && <TheatresTab />}
       {tab === 'shows' && <ShowsTab />}
       {tab === 'admins' && <AdminsTab />}
+      {tab === 'applications' && <ApplicationsTab />}
     </>
   );
 }

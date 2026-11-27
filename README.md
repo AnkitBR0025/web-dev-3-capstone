@@ -1,282 +1,331 @@
-# MovieTime – Cinema Ticket Booking
+# CineGo – Movie Ticket Booking Website
 
-A full-stack MERN web app where users browse movies and theatres, choose seats on a live seat map and book tickets. When one user selects a seat, it is locked for everyone else **instantly** using Socket.IO, so two people can never book the same seat.
+CineGo is a movie ticket booking website. Users can explore movies, find theatres, select a show, choose seats and book tickets online.
 
-Built with **MongoDB, Express, React, Node.js and Socket.IO**.
+The project also has separate access for normal users, theatre admins and the super admin.
 
----
-
-## Screenshots
-
-> Create a `screenshots/` folder in the project root, save your images there with these names and they will show up below.
-
-| Home – now showing | Theatres – near me |
-| :---: | :---: |
-| ![Home](screenshots/home.png) | ![Theatres](screenshots/theatres.png) |
-
-| Show list for a movie | Live seat map |
-| :---: | :---: |
-| ![Shows](screenshots/shows.png) | ![Seat map](screenshots/seatmap.png) |
-
-| Two users, live seat locking | Booking with ticket code |
-| :---: | :---: |
-| ![Live locking](screenshots/live-locking.png) | ![My bookings](screenshots/my-bookings.png) |
-
-| Admin – manage movies, theatres, shows | Collection reports |
-| :---: | :---: |
-| ![Admin](screenshots/admin.png) | ![Reports](screenshots/reports.png) |
-
-| Login | Postman tests |
-| :---: | :---: |
-| ![Login](screenshots/login.png) | ![Postman](screenshots/postman.png) |
+**Tagline:** BOOK • WATCH • ENJOY
 
 ---
 
-## Features
+## Main Features
 
-**For users**
-- Register and log in securely (JWT access and refresh tokens).
-- Browse movies, search by title and see upcoming shows.
-- **Theatres page** with a **Near me** button that sorts cinemas by distance from your location, plus search by name or city.
-- Pick seats on a seat map and see other users' selections in real time.
-- Book tickets and get a **unique ticket code** (for example `MT-9F3A21BC`).
-- View booking history and cancel a booking before the show starts.
+### For users
+- Create an account and log in.
+- Browse movies and search for a movie by its title.
+- View theatres and search by theatre name or city.
+- Use the **Near me** option to sort theatres by distance (browser location permission is required).
+- View upcoming shows and select a show.
+- Choose seats from the seat layout.
+- See seat selections and seat locks update live.
+- Complete a demo checkout using UPI, card or net banking. **No real payment is taken.**
+- View booking history and ticket details.
+- Download a PDF ticket with a QR code.
+- Cancel an eligible booking before the show starts.
 
-**For theatre admins**
-- Add and delete movies.
-- Add their own theatres (with optional map position) and screens (rows and seats per row).
-- Schedule shows with movie, screen, time and price.
-- See collection reports for their own theatres only.
+### For theatre admins
+- Manage movies.
+- Add and manage theatres and screens.
+- Schedule shows with a movie, screen, date/time and ticket price.
+- View collection reports for their own theatres.
 
-**For the super admin**
-- Everything a theatre admin can do, for all theatres.
-- Create theatre admin accounts.
+### For the super admin
+- Manage platform data across theatres.
+- Review theatre admin applications and approve or reject them.
+- Create and manage theatre admin access.
 
-**Live seat locking**
-- Clicking a seat holds it for 5 minutes and turns it red for other users.
-- Leaving the page, closing the tab or letting the hold expire releases the seat.
-- The server re-checks the hold at booking time and uses an atomic database update, which prevents double booking even when two people confirm at the same moment.
-
----
-
-## User roles
-
-| Role | What they can do |
-| --- | --- |
-| `user` | Browse, select seats, book, view history, cancel own bookings |
-| `theatreAdmin` | CRUD for movies, own theatres, screens and shows; collection reports for own theatres |
-| `superAdmin` | All admin actions for every theatre; creates theatre admins |
-
-Public registration always creates a normal `user`. Admins are created by the seed script or by the super admin.
+### Live seat selection
+CineGo uses Socket.IO to update seat availability in real time. A selected seat is temporarily locked so another user cannot select it at the same time. The server checks seat availability again when a booking is submitted to help prevent double booking.
 
 ---
 
-## Tech stack
+## Technologies Used
 
-| Layer | Technologies |
-| --- | --- |
-| Backend | Node.js, Express, Mongoose, dotenv, bcrypt, jsonwebtoken, Socket.IO |
-| Database | MongoDB |
-| Frontend | React 18, React Router, Fetch API, Context API, socket.io-client, Vite |
-| Other | Node `crypto` module for ticket codes, Postman for API testing |
+| Part | Technology |
+|---|---|
+| Frontend | React, Vite, React Router |
+| Backend | Node.js, Express |
+| Database | MongoDB, Mongoose |
+| Login and security | bcrypt, JSON Web Tokens (JWT) |
+| Live seat updates | Socket.IO |
+| PDF ticket | jsPDF |
+| QR code | qrcode |
+| API testing | Postman |
 
 ---
 
-## Project structure
+## Project Structure
 
-```
-movietime/
-├── server/
-│   ├── config/          db.js, env.js
-│   ├── models/          User, Movie, Theatre, Screen, Show, Booking
-│   ├── controllers/     auth, movie, theatre, screen, show, booking, report
-│   ├── routes/          one route file per controller
-│   ├── middleware/      auth.js (JWT), role.js (RBAC), error.js (central handler)
-│   ├── sockets/         seatSocket.js, seatLocks.js (live seat locking)
-│   ├── utils/           token.js, ticketCode.js, seats.js, AppError.js, asyncHandler.js
-│   ├── seed.js          demo data and demo accounts
-│   └── server.js
+```text
+CineGo/
 ├── client/
+│   ├── public/
+│   │   └── cinego-logo.png
 │   └── src/
-│       ├── context/     AuthContext.jsx, SocketContext.jsx
-│       ├── components/  Navbar.jsx, ProtectedRoute.jsx
-│       ├── pages/       Movies, MovieShows, Theatres, SeatMap, MyBookings,
-│       │                Login, Register, Admin, Reports
-│       ├── api.js       fetch wrapper with automatic token refresh
-│       └── App.jsx
-├── MovieTime.postman_collection.json
+│       ├── components/       # Navbar and protected routes
+│       ├── context/          # Login and Socket.IO context
+│       ├── pages/            # Movies, theatres, booking, admin pages
+│       ├── api.js            # API request helper
+│       ├── App.jsx
+│       └── index.css
+├── server/
+│   ├── config/               # Database and environment setup
+│   ├── controllers/          # Application logic
+│   ├── middleware/           # Authentication, roles and errors
+│   ├── models/               # MongoDB models
+│   ├── routes/               # API routes
+│   ├── sockets/              # Live seat locking
+│   ├── utils/                # Helper functions
+│   ├── .env.example
+│   ├── seed.js               # Sample data and demo accounts
+│   └── server.js
 └── README.md
 ```
 
 ---
 
-## Getting started
+## Requirements
 
-### Prerequisites
-- Node.js 18 or newer
-- MongoDB running locally, or a MongoDB Atlas connection string
+Before running the project, install:
 
-### 1. Backend
+- Node.js (18 or newer recommended)
+- MongoDB Community Server, or a MongoDB Atlas database
+- npm (comes with Node.js)
 
-```bash
-cd server
-cp .env.example .env     # on Windows: copy .env.example .env
+---
+
+## How to Run the Project
+
+Open two terminals in VS Code.
+
+### 1. Set up the backend
+
+Open the first terminal:
+
+```powershell
+cd CineGo\server
+copy .env.example .env
 npm install
-npm run seed             # creates demo accounts, a theatre, 2 movies and 2 shows
-npm run dev              # API on http://localhost:5000
 ```
 
-### 2. Frontend
+Open `server/.env` and check the values. Make sure MongoDB is running and the `MONGO_URI` value points to your database.
 
-```bash
-cd client
-npm install
-npm run dev              # app on http://localhost:5173
+The main environment variables are:
+
+| Variable | Purpose |
+|---|---|
+| `PORT` | Backend port (default: `5001`) |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_ACCESS_SECRET` | Secret used for access tokens |
+| `JWT_REFRESH_SECRET` | Secret used for refresh tokens |
+| `ACCESS_EXPIRES` | Access token expiry time |
+| `REFRESH_EXPIRES` | Refresh token expiry time |
+| `CLIENT_URL` | Frontend URL used by Socket.IO |
+| `SEAT_LOCK_MINUTES` | Temporary seat-lock duration |
+| `SUPERADMIN_EMAIL` | Super admin email used by the seed script |
+| `SUPERADMIN_PASSWORD` | Super admin password used by the seed script |
+
+Use your own long, private JWT secrets. Do not share your `.env` file or upload it to GitHub.
+
+Now create the sample data and start the backend:
+
+```powershell
+npm run seed
+npm run dev
 ```
 
-The Vite dev server proxies `/api` and `/socket.io` to port 5000, so no CORS setup is needed.
+The backend runs at:
 
-### Environment variables (`server/.env`)
+```text
+http://localhost:5001
+```
 
-| Variable | Description | Example |
-| --- | --- | --- |
-| `PORT` | API port | `5000` |
-| `MONGO_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/movietime` |
-| `JWT_ACCESS_SECRET` | Secret for access tokens | long random string |
-| `JWT_REFRESH_SECRET` | Secret for refresh tokens | a different long random string |
-| `ACCESS_EXPIRES` | Access token lifetime | `30m` |
-| `REFRESH_EXPIRES` | Refresh token lifetime | `7d` |
-| `CLIENT_URL` | Allowed origin for Socket.IO | `http://localhost:5173` |
-| `SEAT_LOCK_MINUTES` | How long a selected seat is held | `5` |
+You can check whether it is running by opening:
 
-The `.env` file is listed in `.gitignore` and must never be committed.
+```text
+http://localhost:5001/api/health
+```
 
-### Demo accounts (after `npm run seed`)
+A successful response looks like:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+### 2. Set up the frontend
+
+Open a second terminal:
+
+```powershell
+cd CineGo\client
+npm install
+npm run dev
+```
+
+Open the Vite URL shown in the terminal. The default URL is:
+
+```text
+http://localhost:5173
+```
+
+The frontend development server forwards `/api` and `/socket.io` requests to the backend on port `5001`.
+
+---
+
+## Demo Login Accounts
+
+After running `npm run seed`, the seed script creates these sample accounts:
 
 | Role | Email | Password |
-| --- | --- | --- |
+|---|---|---|
 | Super admin | `super@movietime.com` | `Super@123` |
 | Theatre admin | `admin@movietime.com` | `Admin@123` |
-| User | `user@movietime.com` | `User@123` |
+| Normal user | `user@movietime.com` | `User@123` |
+
+The super admin email and password can be changed through `SUPERADMIN_EMAIL` and `SUPERADMIN_PASSWORD` in the server environment file before running the seed script.
+
+These are development demo credentials. Change them before using the project in a real environment.
 
 ---
 
-## How to use the app
+## How to Use CineGo
 
-1. **Log in** as the theatre admin and open **Manage**.
-2. Add a **movie**, a **theatre** (use *Use my location* to save its position), a **screen** for that theatre, then schedule a **show** with a future time.
-3. Log in as a **user**, open a movie (or the **Theatres** page), choose a show and click seats.
-4. Click **Confirm booking** to get your ticket code on the **My bookings** page.
-5. Log back in as the admin and open **Collections** to see the money and tickets per movie and per show.
+1. Start MongoDB, the backend and the frontend.
+2. Open CineGo in your browser.
+3. Register a normal user account or log in using a demo account.
+4. Browse the available movies.
+5. Open a movie to see its upcoming shows.
+6. Select a show and choose your seats.
+7. Confirm the selected seats and complete the demo checkout.
+8. Open **My Bookings** to see your booking and download the PDF ticket.
 
-**To see live seat locking:** open the same show in two browsers (or one normal and one private window) logged in as two different users. A seat picked in one window turns red in the other straight away.
+To test live seat locking, open the same show in two different browser sessions and log in with two different user accounts. Select a seat in one session and check that its status updates in the other session.
 
----
+### Setting up movies and shows
 
-## Database design
+Log in with a theatre admin or super admin account and open the admin area. Add a movie, theatre and screen, then create a show with its date, time and price. Normal users can book seats for available upcoming shows.
 
-| Collection | Main fields | Relationships |
-| --- | --- | --- |
-| `User` | name, email (unique), password (hashed), role, refreshToken (hashed) | – |
-| `Movie` | title, description, duration, language, genre, poster | `createdBy` → User |
-| `Theatre` | name, city, latitude, longitude | `admin` → User |
-| `Screen` | name, rows, seatsPerRow | `theatre` → Theatre |
-| `Show` | startTime, price, bookedSeats | `movie` → Movie, `screen` → Screen, `theatre` → Theatre |
-| `Booking` | seats, totalAmount, ticketCode (unique), status | `user` → User, `show` → Show |
-
-**Indexes:** `User.email` (unique), `Show {movie, startTime}`, `Booking.ticketCode` (unique), `Booking {user, createdAt}`, `Booking {show, status}`, `Screen {theatre, name}` (unique).
+A theatre owner can also submit an application through the theatre admin registration page. The super admin must approve the application before theatre admin access is provided.
 
 ---
 
-## REST API
+## Important Notes
 
-Base URL: `http://localhost:5000/api`. Routes marked 🔒 need a valid access token, and routes marked 🛡️ also need an admin role.
-
-| Area | Method and path | Access |
-| --- | --- | --- |
-| Auth | `POST /auth/register` | public |
-| | `POST /auth/login` | public |
-| | `POST /auth/refresh` | public (needs refresh token) |
-| | `POST /auth/logout` | 🔒 |
-| | `GET /auth/me` | 🔒 |
-| | `POST /auth/create-admin` | 🔒 super admin |
-| Movies | `GET /movies`, `GET /movies/:id` | public |
-| | `POST /movies`, `PUT /movies/:id`, `DELETE /movies/:id` | 🛡️ |
-| Theatres | `GET /theatres` | public |
-| | `GET /theatres/mine` | 🛡️ |
-| | `POST /theatres`, `PUT /theatres/:id`, `DELETE /theatres/:id` | 🛡️ own theatres |
-| Screens | `GET /screens` | public |
-| | `GET /screens/mine`, `POST /screens`, `DELETE /screens/:id` | 🛡️ own theatres |
-| Shows | `GET /shows?movie=&theatre=&upcoming=true`, `GET /shows/:id` | public |
-| | `GET /shows/manage`, `POST /shows`, `PUT /shows/:id`, `DELETE /shows/:id` | 🛡️ own theatres |
-| Bookings | `POST /bookings` | 🔒 |
-| | `GET /bookings/my` | 🔒 |
-| | `PATCH /bookings/:id/cancel` | 🔒 owner or super admin |
-| Reports | `GET /reports/movies`, `GET /reports/shows` | 🛡️ (aggregation) |
-
-Errors are returned by one central handler as `{ "success": false, "message": "..." }` with the right status code (400, 401, 403, 404, 409, 500).
-
-### Socket.IO events
-
-| Direction | Event | Purpose |
-| --- | --- | --- |
-| client → server | `joinShow`, `leaveShow` | Start or stop watching the seats of a show |
-| client → server | `lockSeat`, `unlockSeat` | Select or deselect a seat |
-| server → client | `locks` | Current list of held seats for the show |
-| server → client | `seatsBooked` | Seats that were just booked |
-| server → client | `seatsReleased` | Seats freed by a cancellation |
-
-Sockets are authenticated with the same JWT access token.
+- The checkout is only a demo flow. It does not connect to a real payment gateway and does not process real payments.
+- The **Near me** feature needs permission to access the browser's location.
+- Live seat updates need both the backend and frontend to be running.
+- The project uses MongoDB to store users, movies, theatres, screens, shows and bookings.
+- Keep the `.env` file private. Only `.env.example` should be shared as a setup template.
 
 ---
 
-## Security
+## API Overview
 
-- Passwords are hashed with **bcrypt** and never returned by the API.
-- **JWT access tokens** are short-lived. **Refresh tokens** are rotated on every use and only a hash is stored in the database.
-- Role-based access control is enforced on the server for every admin route.
-- A theatre admin can only change theatres, screens and shows that they own.
-- Booking is validated on the server: the show must be in the future, seats must exist on the screen, each seat must be held by the booking user, and the database update is atomic.
+The backend API base URL is:
 
----
+```text
+http://localhost:5001/api
+```
 
-## API testing with Postman
+Main API groups:
 
-1. Import `MovieTime.postman_collection.json` into Postman.
-2. Run the three **Login** requests first. They save `accessToken` and `refreshToken` as collection variables.
-3. Run the list requests (movies, theatres, screens, shows) to fill the id variables.
-4. Create your first booking through the React app, because booking needs a seat lock made over Socket.IO. After that, **My bookings**, **Cancel booking** and the **Reports** requests work in Postman.
-5. The **RBAC checks** folder shows the 401 and 403 responses.
+| API path | Purpose |
+|---|---|
+| `/auth` | Registration, login, logout and token refresh |
+| `/theatre-admin-applications` | Theatre admin applications |
+| `/movies` | Movie information and management |
+| `/theatres` | Theatre information and management |
+| `/screens` | Screen management |
+| `/shows` | Show schedules |
+| `/bookings` | Create, view and cancel bookings |
+| `/reports` | Movie and show collection reports |
 
----
-
-## Project requirements checklist
-
-- [x] MVC folder structure (models, controllers, routes, middleware, config)
-- [x] Environment variables in `.env`, never committed
-- [x] Registration and login with bcrypt hashing and JWT access and refresh tokens
-- [x] Protected route (`GET /bookings/my`) and role-based routes (`POST /movies`, `/reports/*`)
-- [x] Mongoose schemas with validation and relationships between collections
-- [x] Aggregation pipelines (`reportController.js`) and indexes
-- [x] Centralised error-handling middleware with proper HTTP status codes
-- [x] REST API tested with Postman (collection included)
-- [x] React frontend with routing, controlled forms, Context API and protected pages
-- [x] Live seat locking with Socket.IO and unique ticket codes with `crypto`
+Some API routes require a valid login token. Admin routes also check the user's role and theatre access.
 
 ---
 
-## Possible improvements
+## API Testing
 
-- Online payment before the booking is confirmed
-- Email or SMS ticket delivery with a QR code
-- Store seat locks in Redis so the server can run on several instances
-- Map view of nearby theatres
-- Reviews and ratings for movies
+The project includes `MovieTime.postman_collection.json` in the root folder.
+
+1. Open Postman.
+2. Import the collection JSON file.
+3. Run the login requests and use the returned tokens for protected requests.
+4. Test movie, theatre, screen and show APIs.
+5. Test booking and cancellation after creating a booking through the website, because seat selection uses Socket.IO.
+6. Test the reports and role-based access routes with the correct account.
 
 ---
 
-## Author
+## Screenshots
 
-Built by **Ankit Kumar Pandey** as a full-stack project.
+The following screenshots show the main CineGo user flow and admin features.
 
-GitHub: `https://github.com/<your-username>`
+### User pages
+
+#### Home Page
+
+![CineGo Home Page](screenshots/home.png)
+
+#### Movies Page
+
+![Movies Page](screenshots/movies.png)
+
+### Booking and payment
+
+#### Available Seats
+
+![Available Seats](screenshots/seat-selection-available.png)
+
+#### Selected Seats
+
+![Selected Seats](screenshots/seat-selection-selected.png)
+
+#### Demo Payment Method
+
+![Demo Payment Method](screenshots/payment-method.png)
+
+#### Booking Successful
+
+![Booking Successful](screenshots/booking-success.png)
+
+#### My Bookings
+
+![My Bookings](screenshots/my-bookings.png)
+
+#### PDF Ticket with QR Code
+
+![PDF Ticket with QR Code](screenshots/pdf-ticket.png)
+
+### Super Admin pages
+
+#### Manage Movies
+
+![Super Admin - Manage Movies](screenshots/super-admin-manage-movies.png)
+
+#### Theatre Admin Application Form
+
+![Theatre Admin Application Form](screenshots/theatre-admin-application-form.png)
+
+#### Pending Theatre Admin Login
+
+![Pending Theatre Admin Login](screenshots/theatre-admin-pending-login.png)
+
+#### Theatre Admin Applications seen on Super Admin page
+
+![Super Admin - Theatre Admin Applications](screenshots/super-admin-applications.png)
+
+#### Application Approved by Super Admin
+
+![Application Approved](screenshots/application-approved.png)
+
+#### Theatre Admin Dashboard
+
+![Theatre Admin Dashboard](screenshots/theatre-admin-dashboard.png)
+
+
+---
+
+**CineGo – BOOK • WATCH • ENJOY**

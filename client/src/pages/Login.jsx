@@ -15,7 +15,11 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
-      await login(form.email, form.password);
+      const result = await login(form.email, form.password);
+      if (result.message) {
+        navigate('/admin', { replace: true, state: { notice: result.message } });
+        return;
+      }
       navigate(location.state?.from || '/', { replace: true });
     } catch (err) {
       setError(err.message);
@@ -30,6 +34,7 @@ export default function Login() {
       <label>Password<input name="password" type="password" value={form.password} onChange={change} required /></label>
       <button className="btn">Log in</button>
       <p className="muted">New here? <Link to="/register">Create an account</Link></p>
+      <p className="muted">Manage a cinema? <Link to="/theatre-admin/register">Apply for theatre admin access</Link></p>
     </form>
   );
 }

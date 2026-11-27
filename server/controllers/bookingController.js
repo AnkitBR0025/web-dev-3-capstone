@@ -7,13 +7,17 @@ const { isValidSeat } = require('../utils/seats');
 const locks = require('../sockets/seatLocks');
 
 const room = (id) => `show:${id}`;
+const onlinePaymentMethods = new Set(['upi', 'card', 'netbanking']);
 
 // POST /api/bookings   body: { showId, seats: ["A1","A2"] }
 exports.create = asyncHandler(async (req, res) => {
-  const { showId } = req.body;
+  const { showId, paymentMethod } = req.body;
   const seats = Array.isArray(req.body.seats) ? [...new Set(req.body.seats)] : [];
   if (!showId || seats.length === 0) throw new AppError('showId and at least one seat are required', 400);
   if (seats.length > 10) throw new AppError('You can book at most 10 seats at once', 400);
+  if (!onlinePaymentMethods.has(paymentMethod)) {
+    throw new AppError('Choose a supported online demo payment method', 400);
+  }
 
   const show = await Show.findById(showId).populate('screen');
   if (!show) throw new AppError('Show not found', 404);
@@ -41,6 +45,7 @@ exports.create = asyncHandler(async (req, res) => {
       show: show._id,
       seats,
       totalAmount: seats.length * show.price,
+      paymentMethod,
       ticketCode: makeTicketCode(),
     });
   } catch (err) {

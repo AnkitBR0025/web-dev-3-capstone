@@ -1,15 +1,22 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const TheatreAdminApplication = require('../models/TheatreAdminApplication');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const { signAccess, signRefresh, hash } = require('../utils/token');
 
-const issueTokens = async (user, res, status = 200) => {
+const issueTokens = async (user, res, status = 200, message) => {
   const accessToken = signAccess(user);
   const refreshToken = signRefresh(user);
   user.refreshToken = hash(refreshToken);
   await user.save();
-  res.status(status).json({ success: true, user, accessToken, refreshToken });
+  res.status(status).json({
+    success: true,
+    user,
+    accessToken,
+    refreshToken,
+    ...(message ? { message } : {}),
+  });
 };
 
 // POST /api/auth/register  (public registration always creates a normal user)
@@ -25,7 +32,21 @@ exports.login = asyncHandler(async (req, res) => {
   if (!email || !password) throw new AppError('Email and password are required', 400);
   const user = await User.findOne({ email: email.toLowerCase() }).select('+password +refreshToken');
   if (!user || !(await user.comparePassword(password))) throw new AppError('Invalid email or password', 401);
-  await issueTokens(user, res);
+  const application = await TheatreAdminApplication.findOne({ applicant: user._id }).select('status');
+  if (application?.status === 'pending' || application?.status === 'approving') {
+    throw new AppError('Your theatre admin application is pending super admin approval.', 403);
+  }
+  if (application?.status === 'rejected') {
+    throw new AppError('Your theatre admin application was rejected. Contact the super admin for more information.', 403);
+  }
+  if (application?.status === 'approved' && user.role !== 'theatreAdmin') {
+    throw new AppError('Your application is approved, but admin access is not ready yet. Please try again shortly.', 403);
+  }
+
+  const message = application?.status === 'approved'
+    ? 'Your theatre admin application is approved. You can now manage your theatre.'
+    : undefined;
+  await issueTokens(user, res, 200, message);
 });
 
 // POST /api/auth/refresh  (rotates the refresh token)

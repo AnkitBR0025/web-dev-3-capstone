@@ -8,7 +8,9 @@ export default function Navbar() {
 
   return (
     <header className="nav">
-      <Link to="/" className="brand">MovieTime</Link>
+      <Link to="/" className="brand" aria-label="CineGo home">
+        <img className="brand-logo" src="/cinego-logo.png" alt="CineGo — Book, Watch, Enjoy" />
+      </Link>
       <nav>
         <NavLink to="/" end>Movies</NavLink>
         <NavLink to="/theatres">Theatres</NavLink>

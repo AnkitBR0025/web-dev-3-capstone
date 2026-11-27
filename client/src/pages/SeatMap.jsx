@@ -14,6 +14,9 @@ export default function SeatMap() {
   const [locks, setLocks] = useState([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [paymentSuccess, setPaymentSuccess] = useState(null);
 
   useEffect(() => {
     api(`/shows/${showId}`)
@@ -63,12 +66,24 @@ export default function SeatMap() {
     });
   };
 
-  const confirm = async () => {
+  const confirm = () => {
+    if (mine.length) {
+      setError('');
+      setPaymentOpen(true);
+    }
+  };
+
+  const payAndConfirm = async () => {
     setBusy(true);
     setError('');
     try {
-      await api('/bookings', { method: 'POST', body: { showId, seats: mine } });
-      navigate('/bookings');
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      const result = await api('/bookings', {
+        method: 'POST',
+        body: { showId, seats: mine, paymentMethod },
+      });
+      setPaymentOpen(false);
+      setPaymentSuccess(result.booking);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -117,16 +132,112 @@ export default function SeatMap() {
         <span><i className="seat booked" /> Booked</span>
       </div>
 
-      {error && <p className="error">{error}</p>}
+      {error && !paymentOpen && <p className="error">{error}</p>}
       <div className="bar card">
         <div>
           <strong>{mine.length ? mine.join(', ') : 'No seats selected'}</strong>
-          <p className="muted">Total ₹{mine.length * show.price}. Seats you pick are held for a few minutes.</p>
+          <p className="muted">Total ₹{mine.length * show.price}. Seats are held for a few minutes.</p>
         </div>
         <button className="btn" disabled={!mine.length || busy} onClick={confirm}>
-          {busy ? 'Booking…' : 'Confirm booking'}
+          Confirm seats
         </button>
       </div>
+
+      {paymentOpen && (
+        <div className="payment-backdrop" onClick={() => !busy && setPaymentOpen(false)}>
+          <section
+            className="payment-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="payment-heading">
+              <div>
+                <p className="eyebrow">COMPLETE YOUR CHECKOUT</p>
+                <h2 id="payment-title">Choose a payment method</h2>
+              </div>
+              <button
+                className="payment-close"
+                type="button"
+                aria-label="Close payment options"
+                disabled={busy}
+                onClick={() => setPaymentOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <p className="muted payment-note">Demo checkout only — no real payment will be taken.</p>
+            <div className="payment-methods" role="group" aria-label="Payment method">
+              {[
+                { id: 'upi', name: 'UPI', detail: 'Pay with UPI' },
+                { id: 'card', name: 'Card', detail: 'Credit or debit card' },
+                { id: 'netbanking', name: 'Net banking', detail: 'Pay through your bank' },
+              ].map((method) => (
+                <button
+                  className={`payment-method${paymentMethod === method.id ? ' selected' : ''}`}
+                  key={method.id}
+                  type="button"
+                  autoFocus={paymentMethod === method.id}
+                  aria-pressed={paymentMethod === method.id}
+                  disabled={busy}
+                  onClick={() => setPaymentMethod(method.id)}
+                >
+                  <span className="payment-radio" aria-hidden="true" />
+                  <span>
+                    <strong>{method.name}</strong>
+                    <small>{method.detail}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="payment-summary">
+              <span>{mine.length} {mine.length === 1 ? 'seat' : 'seats'} · {mine.join(', ')}</span>
+              <strong>₹{mine.length * show.price}</strong>
+            </div>
+            {error && <p className="error payment-error" role="alert">{error}</p>}
+            <div className="payment-actions">
+              <button
+                className="btn ghost"
+                type="button"
+                disabled={busy}
+                onClick={() => setPaymentOpen(false)}
+              >
+                Back to seats
+              </button>
+              <button className="btn" type="button" disabled={busy || !mine.length} onClick={payAndConfirm}>
+                {busy ? 'Processing payment…' : `Pay ₹${mine.length * show.price}`}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {paymentSuccess && (
+        <div className="payment-backdrop">
+          <section
+            className="payment-dialog payment-confirmation"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-success-title"
+          >
+            <span className="payment-success-icon" aria-hidden="true">✓</span>
+            <p className="eyebrow">PAYMENT SUCCESSFUL</p>
+            <h2 id="payment-success-title">Your ticket is booked!</h2>
+            <p className="muted">Your demo payment is confirmed and your ticket has been issued.</p>
+            <div className="payment-summary confirmation-summary">
+              <span>
+                {paymentSuccess.seats.join(', ')}
+                <small>Ticket code: {paymentSuccess.ticketCode}</small>
+              </span>
+              <strong>₹{paymentSuccess.totalAmount}</strong>
+            </div>
+            <button className="btn confirmation-action" type="button" onClick={() => navigate('/bookings')}>
+              View my ticket
+            </button>
+          </section>
+        </div>
+      )}
     </>
   );
 }

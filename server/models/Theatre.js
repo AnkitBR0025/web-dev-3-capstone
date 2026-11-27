@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const theatreSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, 'Theatre name is required'], trim: true },
+    address: { type: String, trim: true },
     city: { type: String, required: [true, 'City is required'], trim: true },
     admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     // optional map position, used by the "theatres near me" feature
